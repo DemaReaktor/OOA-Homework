@@ -1,5 +1,7 @@
 from sys import argv
+from operator import *
+
 try:
-    print(eval("".join(argv[1:]))) if not argv[2].isdigit() else exit()
+    print({'+': add, '-': sub, '*': mul, '/': truediv}[argv[2]](int(argv[1]), int(argv[3])))
 except:
     print("error")
