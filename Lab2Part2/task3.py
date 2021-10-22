@@ -14,10 +14,54 @@ class Student:
                 raise TypeError("type of grades should be 'int'")
             if element < 0 or element > 12:
                 raise ValueError("values of grades should be not more than 12 and not less than 0")
-        self.name = name
-        self.surname = surname
-        self.book_number = book_number
-        self.grades = grades
+        self.__name = name
+        self.__surname = surname
+        self.__book_number = book_number
+        self.__grades = grades
+
+    @property
+    def name(self):
+        return self.__name
+
+    @property
+    def surname(self):
+        return self.__surname
+
+    @property
+    def book_number(self):
+        return self.__book_number
+
+    @property
+    def grades(self):
+        return self.__grades
+
+    @book_number.setter
+    def book_number(self, value):
+        if not isinstance(value, int):
+            raise TypeError("type of book_number should be 'int'")
+        if not value <= 0:
+            raise ValueError('value of book_number should be more than 0')
+        self.__book_number = value
+
+    def add_grade(self, value):
+        """add grade into student`s grades"""
+        if not isinstance(value, int):
+            raise TypeError("type of grade should be 'int'")
+        if value < 0 or value > 12:
+            raise ValueError("value of grade should be not more than 12 and not less than 0")
+        self.__grades.append(value)
+
+    def remove_grade(self, value):
+        """will remove grade from student`s grades if there is this grade"""
+        if not isinstance(value, int):
+            raise TypeError("type of grade should be 'int'")
+        if value < 0 or value > 12:
+            raise ValueError("value of grade should be not more than 12 and not less than 0")
+        for element in self.__grades:
+            if element == value:
+                self.__grades.pop(value)
+                return
+        raise ValueError('student does not have this grade')
 
     def average_score(self):
         """count average grade"""
@@ -34,14 +78,16 @@ class Group:
             raise TypeError("type of students should be 'list'")
         if not students:
             raise ValueError("value of students should be not 'null'")
-        self.students = []
         for element in students:
-            is_new = True
-            for group_student in self.students:
-                if element.name == group_student.name and element.surname == group_student.surname:
-                    is_new = False
-            if is_new and len(self.students) < 20:
-                self.students.append(element)
+            if not isinstance(element, Student):
+                raise TypeError("every element should have type 'Student'")
+        self.__students = []
+        for element in students:
+            self.add_student(element)
+
+    @property
+    def students(self):
+        return self.__students
 
     def add_student(self, student):
         """will add student if he is new in group and number of students is allowable"""
@@ -49,12 +95,24 @@ class Group:
             raise TypeError("type of student should be 'Student'")
         if not student:
             raise ValueError("value of student should be not 'null'")
-        if len(self.students) >= 20:
-            return
-        for group_student in self.students:
+        if len(self.__students) >= 20:
+            raise ValueError('group is full')
+        for group_student in self.__students:
             if student.name == group_student.name and student.surname == group_student.surname:
+                raise ValueError('student already exists in this group')
+        self.__students.append(student)
+
+    def remove_student(self, student):
+        """will remove student from group is there he is"""
+        if not isinstance(student, Student):
+            raise TypeError("type of student should be 'Student'")
+        if not student:
+            raise ValueError("value of student should be not 'null'")
+        for group_student in self.__students:
+            if student.name == group_student.name and student.surname == group_student.surname:
+                self.__students.pop(student)
                 return
-        self.students.append(student)
+        raise ValueError('student does not exist in this group')
 
 
 Ann = Student("Ann", "No", 0, [10, 8, 6, 8, 9])
