@@ -1,0 +1,26 @@
+[
+  {
+  "_Pizza__name": "usual",
+  "_Pizza__ingredients": [
+    "potato",
+    "apple"
+  ],
+    "_Pizza__size": 10.0
+  },
+  {
+  "_MondayPizza__name": "apple",
+  "_MondayPizza__ingredients": [
+    "potato",
+    "apple"
+  ],
+    "_TuesdayPizza__size": 10.0
+  },
+  {
+  "_TuesdayPizza__name": "potato",
+  "_TuesdayPizza__ingredients": [
+    "potato",
+    "apple"
+  ],
+    "_TuesdayPizza__size": 10.0
+  }
+]

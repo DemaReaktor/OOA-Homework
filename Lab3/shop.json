@@ -1,0 +1,50 @@
+{
+   "file_date": {
+      "year": 2021,
+      "month": 11,
+      "day": 18
+   },
+   "file_events": {
+      "R": {
+         "_ITEvent__name": "R",
+         "_ITEvent__date": {
+            "year": 2021,
+            "month": 12,
+            "day": 12
+         },
+         "_ITEvent__price": 10.0,
+         "_ITEvent__tickets": [
+            {
+               "_Ticket__number": 0,
+               "_Ticket__price": 10.0,
+               "_Ticket__event": "R"
+            },
+            {
+               "_Ticket__number": 0,
+               "_Ticket__price": 10.0,
+               "_Ticket__event": "R"
+            },
+            {
+               "_Ticket__number": 0,
+               "_Ticket__price": 10.0,
+               "_Ticket__event": "R"
+            },
+            {
+               "_Ticket__number": 0,
+               "_Ticket__price": 10.0,
+               "_Ticket__event": "R"
+            },
+            {
+               "_Ticket__number": 0,
+               "_Ticket__price": 10.0,
+               "_Ticket__event": "R"
+            },
+            {
+               "_Ticket__price": 10.0,
+               "_Ticket__number": 0,
+               "_Ticket__event": "R"
+            }
+         ]
+      }
+   }
+}

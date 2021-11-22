@@ -33,7 +33,13 @@ class FileClass:
 
 class ITEvent:
     """Event"""
+    __types_of_tickets = set()
+    # __pers_cent_of_tickets = {}
+
     def __init__(self, name, date_event, price):
+        self.add_type_of_ticket(StudentTicket)
+        self.add_type_of_ticket(AdvancedTicket)
+        self.add_type_of_ticket(LateTicket)
         if not isinstance(date_event, Date):
             raise TypeError('date_event should have type "Date"')
         if not isinstance(price, float):
@@ -44,7 +50,7 @@ class ITEvent:
             raise ValueError('name should not have value "None"')
         if price <= 0:
             raise ValueError('price should be more 0')
-        self.get_type_from_date()
+        # self.get_type_from_date()
         self.__name = name
         self.__date = date_event
         self.__price = price
@@ -62,35 +68,36 @@ class ITEvent:
     def date(self):
         return self.__date
 
+    @property
+    def days_before_event(self):
+        return self.__date.toordinal()-Date.today().toordinal()
+
     def create_ticket(self, for_student):
         """create ticket which is for this event and has argument is_student"""
-        if for_student:
-            self.__tickets.append(StudentTicket(self))
-            return
-        self.__tickets.append(self.get_type_from_date()(self))
+        self.__tickets.append(self.get_type(is_student=for_student, days=self.days_before_event)(self))
 
-    def date_value(self):
-        """:returns
-        2: if 60 or more days before
-        1: if more 10 and less 60 days before
-        -1: if less 10 days before
-        0: if event has ended"""
-        time_before_event = self.__date.toordinal() - date.today().toordinal()
-        if time_before_event >= 60:
-            return 2
-        if time_before_event >= 10:
-            return 1
-        if time_before_event >= 0:
-            return -1
-        return 0
+    # def date_value(self):
+    #     """:returns
+    #     2: if 60 or more days before
+    #     1: if more 10 and less 60 days before
+    #     -1: if less 10 days before
+    #     0: if event has ended"""
+    #     time_before_event = self.__date.toordinal() - date.today().toordinal()
+    #     if time_before_event >= 60:
+    #         return 2
+    #     if time_before_event >= 10:
+    #         return 1
+    #     if time_before_event >= 0:
+    #         return -1
+    #     return 0
     
-    def get_type_from_date(self):
-        """return a type of ticket depending on days before event
-        return ValueError if event has ended"""
-        value = self.date_value()
-        if value:
-            return Ticket if value == 1 else (AdvancedTicket if value == 2 else LateTicket)
-        raise ValueError('Event already has taken place')
+    # def get_type_from_date(self):
+    #     """return a type of ticket depending on days before event
+    #     return ValueError if event has ended"""
+    #     value = self.date_value()
+    #     if value:
+    #         return Ticket if value == 1 else (AdvancedTicket if value == 2 else LateTicket)
+    #     raise ValueError('Event already has taken place')
 
     def show_tickets(self):
         """show count of tickets of this event"""
@@ -109,7 +116,7 @@ class ITEvent:
     def update_tickets(self):
         """change types of tickets depending on days before event"""
         tickets_new = []
-        type_of_tickets = self.get_type_from_date()
+        type_of_tickets = self.get_type(days=self.days_before_event)
         for ticket in self.__tickets:
             if isinstance(ticket, StudentTicket) or isinstance(ticket, type_of_tickets):
                 tickets_new.append(ticket)
@@ -133,10 +140,26 @@ class ITEvent:
         """add to this event a ticket"""
         self.__tickets.append(ticket)
 
+    @classmethod
+    def add_type_of_ticket(cls, type_of_ticket):
+        if not isinstance(type_of_ticket, type):
+            raise TypeError('type_of_ticket should be a "type"')
+        if not issubclass(type_of_ticket, Ticket):
+            raise TypeError('type_of_ticket should be son of type "Ticket"')
+        cls.__types_of_tickets.add(type_of_ticket)
+
+    @classmethod
+    def get_type(cls, **kwargs):
+        for element in cls.__types_of_tickets:
+            if element.is_type(**kwargs):
+                return element
+        return Ticket if Ticket.is_type(**kwargs) else None
+
 
 class Ticket:
     """usual ticket"""
     __tickets = {}
+    # __PER_CENT_OF_PRICE = 1.
 
     def __init__(self, *args):
         if len(args) == 1:
@@ -164,7 +187,7 @@ class Ticket:
 
     @property
     def price(self):
-        return self.__price
+        return self.__price*Ticket.read_per_cent(Ticket)
 
     @property
     def event(self):
@@ -186,57 +209,84 @@ class Ticket:
         """show ticket which has this number"""
         return str(cls.__tickets[number])
 
+    @classmethod
+    def is_type(cls, **kwargs):
+        return 1 if 'days' in kwargs.keys() and kwargs['days'] > 0 else 0
 
-class AdvancedTicket(Ticket):
-    """ticket of event which will start across 60 or more days"""
-    def __init__(self, event):
-        super().__init__(event)
-
-    @property
-    def price(self):
-        return super().price*0.6
-
-    def __str__(self):
-        return "{number: "+str(self.number)+", price: "+str(self.price)+"}"
+    @classmethod
+    def read_per_cent(cls, type_of_ticket):
+        with open('consts.json', 'r') as f:
+            return json.loads()[type_of_ticket]
 
 
 class StudentTicket(Ticket):
     """ticket for students"""
+
     def __init__(self, event):
+        ITEvent.add_type_of_ticket(StudentTicket)
         super().__init__(event)
 
     @property
     def price(self):
-        return super().price*0.5
+        return self.__price * Ticket.read_per_cent(StudentTicket)
 
     def __str__(self):
         return "{number: "+str(self.number)+", price: "+str(self.price)+"}"
+
+    @classmethod
+    def is_type(cls, **kwargs):
+        return 'is_student' in kwargs.keys() and kwargs['is_student']
+
+
+class AdvancedTicket(Ticket):
+    """ticket of event which will start across 60 or more days"""
+
+    def __init__(self, event):
+        ITEvent.add_type_of_ticket(self.__class__)
+        super().__init__(event)
+
+    @property
+    def price(self):
+        return self.__price * Ticket.read_per_cent(AdvancedTicket)
+
+    def __str__(self):
+        return "{number: "+str(self.number)+", price: "+str(self.price)+"}"
+
+    @classmethod
+    def is_type(cls, **kwargs):
+        return 'days' in kwargs.keys() and kwargs['days'] >= 60
 
 
 class LateTicket(Ticket):
     """ticket of event which will start across 10 or less days"""
+
     def __init__(self, event):
+        ITEvent.add_type_of_ticket(self.__class__)
         super().__init__(event)
 
     @property
     def price(self):
-        return super().price*1.1
+        return self.__price * Ticket.read_per_cent(LateTicket)
 
     def __str__(self):
         return "{number: "+str(self.number)+", price: "+str(self.price)+"}"
+
+    @classmethod
+    def is_type(cls, **kwargs):
+        return 'days' in kwargs.keys() and 10 > kwargs['days'] > 0
 
 
 def file_class_encoder(obj):
     """function for reading file_class in file
     return FileClass"""
-    if 'date' in obj:
-        file_date = Date(obj['date'])
+    if 'file_date' in obj:
+        file_date = Date(obj['file_date'])
         file_events = {}
         for event in obj['file_events'].values():
             event_class = ITEvent(event['_ITEvent__name'], Date(event['_ITEvent__date']), event['_ITEvent__price'])
             for ticket in event['_ITEvent__tickets']:
                 event_class.add(Ticket(ticket['_Ticket__number'], ticket['_Ticket__price'], ticket['_Ticket__event']))
-            file_events[event.name] = event_class
+            file_events[event_class.name] = event_class
         return FileClass(file_date, file_events)
     return obj
 
